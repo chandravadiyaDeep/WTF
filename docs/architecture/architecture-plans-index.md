@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plan 2 is drafted for review. Plans 3–7 remain pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
+This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plan 2–5 are drafted for review. Plans 6–7 remain pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
 
 ## Plan sequence
 
@@ -12,7 +12,7 @@ This index tracks the seven architecture plans required before full application 
 | 2 | Database and Storage Architecture | Drafted for review | Plan 1 workflows; Plan 6 security/privacy feedback; informs Plans 3–5 |
 | 3 | Backend Architecture | Drafted for review | Plans 1–2; Plan 4 processing contracts; coordinates API, identity, jobs, integrations, and billing |
 | 4 | Processing Engine Architecture | Drafted for review | Plans 1–3; defines shared operation contracts consumed by browser/cloud engines and workers |
-| 5 | Frontend Architecture and complete folder/file structure | Pending | Plans 1–4; reflects user journeys and stable API/processing contracts |
+| 5 | Frontend Architecture and complete folder/file structure | Drafted for review | Plans 1–4; Plan 6 security/privacy feedback and Plan 7 implementation gates |
 | 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier plans |
 | 7 | Implementation, Migration, Testing, and Deployment Plan | Pending | Plans 1–6; sequences delivery and operational readiness |
 
@@ -67,9 +67,15 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 ## Plan 5 — Frontend Architecture and complete folder/file structure
 
+**Status:** Drafted for review.
+
+**Documentation:**
+- [05-frontend-architecture.md](05-frontend-architecture.md)
+- [05-website-file-structure.md](05-website-file-structure.md)
+
 **Known requirements:** Next.js and TypeScript are the intended direction. Provide persistent navigation for Home, Data Analysis, Data Preprocessing / Cleaning, Data Visualization, ML Readiness, ML Algorithms & Results, and Settings. Settings should eventually include Account, Plans & Billing, Integrations (including Zapier), White Label, and API & Developer settings. Keep business logic out of UI components; make explanations, previews, progress, and results understandable.
 
-**Open decisions:** routing and layout boundaries, state and data-fetching approach, component/design system, accessibility, upload UX, charting approach, browser processing boundary, report delivery, responsive behavior, and complete reviewed folder/file structure.
+**Open decisions:** API contracts for dataset/history and experiment listing/details; browser refresh persistence; upload limits/cloud-consent UX; PDF candidate response; payment provider and MVP billing launch; package versions and CI are deferred to Plan 7.
 
 **Dependencies:** stable user journeys and contracts from Plans 1–4; security and privacy requirements in Plan 6.
 
