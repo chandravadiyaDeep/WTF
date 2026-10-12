@@ -178,6 +178,8 @@ Input evidence includes parse/type validity, missingness, duplicate/key integrit
 
 Overall score is a configured weighted aggregation only when required dimensions are computed and validation/leakage checks are resolved. Otherwise return pending/incomplete with reasons, no final overall score. Clustering target suitability is not a missing target penalty; use feature distance/sparsity/clusterability evidence. Forecasting checks timestamp parse, order, duplicates/gaps, horizon vs history, enough temporal folds and leakage-prone future features. Classification checks label count/rare classes and split feasibility; regression checks target parse/variance and sample validity.
 
+Normalize applicable dimension scores to a documented 0–100 scale and require the published profile's applicable weights to be nonnegative and sum to 1. Overall = sum(weight × dimension_score) over applicable, completed dimensions, divided by the sum of their weights; show the included dimensions and weights. This weighted score is withheld if a required dimension is pending, unresolved leakage/validation exists, or evidence coverage is below the profile's reviewed completeness rule. Profiles may mark a dimension not applicable for a task (for example supervised target suitability for clustering); excluded weight is renormalized and disclosed, never silently treated as zero.
+
 Scores are deterministic for fixed input/profile/scorer versions. Save exact dataset version/fingerprint, profile version, evidence and score explanation. Thresholds/weights remain configurable and require approved product calibration; no universal row-count guarantee.
 
 ## 11. Recommendations, training, evaluation
