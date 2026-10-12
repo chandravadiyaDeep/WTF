@@ -10,7 +10,7 @@ This index tracks the seven architecture plans required before full application 
 |---|---|---|---|
 | 1 | Product and Service Workflow | Concept established; documented | Product direction; informs Plans 2–7 |
 | 2 | Database and Storage Architecture | Drafted for review | Plan 1 workflows; Plan 6 security/privacy feedback; informs Plans 3–5 |
-| 3 | Backend Architecture | Pending | Plans 1–2; coordinates API, identity, jobs, integrations, and billing |
+| 3 | Backend Architecture | Drafted for review | Plans 1–2; Plan 4 processing contracts; coordinates API, identity, jobs, integrations, and billing |
 | 4 | Processing Engine Architecture | Pending | Plans 1–3; defines operation contracts consumed by frontend and workers |
 | 5 | Frontend Architecture and complete folder/file structure | Pending | Plans 1–4; reflects user journeys and stable API/processing contracts |
 | 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier plans |
@@ -43,11 +43,15 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 ## Plan 3 — Backend Architecture
 
-**Known requirements:** Python and FastAPI are the intended API/backend direction. Long-running work requires background jobs and workers. The system needs integrations among identity, relational data, storage, processing, explainability/history, and configurable token billing.
+**Status:** Drafted for review.
 
-**Open decisions:** API boundaries/versioning, authorization model, job orchestration and idempotency, event/status mechanism, retries and cancellation, integration contracts, observability, error model, and billing ledger/reservation interfaces.
+**Documentation:** [03-backend-architecture.md](03-backend-architecture.md).
 
-**Dependencies:** Plan 2 data/storage choices and Plan 4 processing contracts.
+**Known requirements:** Python/FastAPI modular backend, Supabase Auth and PostgreSQL, private object storage, separated API/service/repository/worker responsibilities, secure workspace authorization, browser/cloud processing contract, durable idempotent jobs, explainable task-aware workflows, and protected token billing.
+
+**Open decisions:** exact JWT verification and database adapter; browser persistence and client-result saving policy; initial formats/resource limits and sync/async cutoffs; payment provider and partial billing/refund/expiry rules; RPO/RTO, logs/rate limits/alerts.
+
+**Dependencies:** Plan 2 workspace, RLS, dataset/version, job, artifact, and ledger model; Plan 4 operation contracts, parsers, limits, readiness/model registry and evaluation protocols.
 
 ## Plan 4 — Processing Engine Architecture
 
