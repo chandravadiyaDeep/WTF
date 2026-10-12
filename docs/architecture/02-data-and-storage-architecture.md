@@ -172,6 +172,14 @@ erDiagram
     uuid job_id FK
     uuid artifact_id FK
   }
+  REPORT_SOURCES {
+    uuid report_id PK, FK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    uuid analysis_run_id FK
+    uuid comparison_id FK
+    int ordinal
+  }
   PROFILES ||--o{ WORKSPACE_MEMBERS : joins
   WORKSPACES ||--|{ WORKSPACE_MEMBERS : grants
   WORKSPACES ||--o{ DATASETS : owns
@@ -195,6 +203,9 @@ erDiagram
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
   ARTIFACTS o|--o{ REPORTS : contains
+  REPORTS ||--|{ REPORT_SOURCES : cites
+  DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
+  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
   REPORTS ||--|{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
   ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
