@@ -172,6 +172,14 @@ erDiagram
     uuid job_id FK
     uuid artifact_id FK
   }
+  READINESS_ASSESSMENTS {
+    uuid id PK
+    uuid workspace_id FK
+  }
+  MODEL_COMPARISONS {
+    uuid id PK
+    uuid workspace_id FK
+  }
   REPORT_SOURCES {
     uuid report_id PK, FK
     uuid workspace_id FK
@@ -193,7 +201,7 @@ erDiagram
   PROCESSING_JOBS o|--o{ ANALYSIS_RUNS : schedules
   PROCESSING_JOBS ||--o{ JOB_ATTEMPTS : attempts
   DATASET_VERSIONS ||--o{ CLEANING_EXECUTIONS : input
-  DATASET_VERSIONS o|--o{ CLEANING_EXECUTIONS : output
+  DATASET_VERSIONS o|--o| CLEANING_EXECUTIONS : output
   PIPELINE_DEFINITIONS ||--o{ PIPELINE_VERSIONS : versions
   PIPELINE_VERSIONS ||--|{ PIPELINE_STEPS : defines
   PIPELINE_VERSIONS ||--o{ CLEANING_EXECUTIONS : executes
@@ -205,7 +213,7 @@ erDiagram
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
   ARTIFACTS o|--o{ REPORTS : contains
-  REPORTS ||--|{ REPORT_SOURCES : cites
+  REPORTS ||--o{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
   ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
   CLEANING_EXECUTIONS o|--o{ REPORT_SOURCES : source
@@ -242,6 +250,14 @@ erDiagram
     uuid workspace_id FK
     uuid assessment_id FK
     text dimension_code
+  }
+  DATASET_VERSIONS {
+    uuid id PK
+    uuid workspace_id FK
+  }
+  PROCESSING_JOBS {
+    uuid id PK
+    uuid workspace_id FK
   }
   EXPERIMENTS {
     uuid id PK
@@ -304,6 +320,10 @@ erDiagram
   WORKSPACES {
     uuid id PK
   }
+  PROCESSING_JOBS {
+    uuid id PK
+    uuid workspace_id FK
+  }
   TOKEN_WALLETS {
     uuid id PK
     uuid workspace_id FK
@@ -361,7 +381,7 @@ erDiagram
     bigint actual_tokens
   }
   PROCESSING_JOBS ||--o| TOKEN_RESERVATIONS : holds
-  WORKSPACES ||--|| TOKEN_WALLETS : owns
+  WORKSPACES ||--o| TOKEN_WALLETS : owns
   TOKEN_WALLETS ||--o{ TOKEN_LEDGER_ENTRIES : records
   TOKEN_RESERVATIONS ||--o{ TOKEN_LEDGER_ENTRIES : settles
   PAYMENT_ORDERS ||--o{ TOKEN_LEDGER_ENTRIES : credits_or_refunds
