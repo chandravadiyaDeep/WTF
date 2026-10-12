@@ -393,6 +393,51 @@ All exposed tenant tables enable RLS and check active workspace membership/role 
 | Wallet/ledger/prices/payments/reservations/usage | scoped history/read | no financial writes | trusted billing service only |
 | Future credentials/integrations | admin or credential owner; never secret plaintext | create/revoke request | hashes/encrypted secret refs |
 
+### MVP table-by-table RLS permissions
+
+“Member” means active workspace membership; “editor” means the owner/admin/editor role. Client mutations should normally be authenticated API requests, not direct table grants. RLS checks tenant membership; grants and trusted API checks restrict writable columns and transitions.
+
+| MVP table | Read | Insert | Update | Delete |
+|---|---|---|---|---|
+| profiles | Own profile | Auth lifecycle only | Own allowlisted preferences; identity fields backend-only | Backend account lifecycle |
+| workspaces | Active members | User requests personal workspace; backend enforces owner invariant | Owner/admin safe metadata; ownership/kind transitions backend-only | Backend deletion workflow |
+| workspace_members | Active members; invitee sees own pending invite | Owner/admin invite or trusted acceptance | Owner/admin role/status; no self-escalation; backend last-owner check | Owner/admin removal or account-closure backend |
+| datasets | Active members | Authorized member via API | Editor renames drafts; lifecycle backend | Backend soft-delete workflow |
+| dataset_assets | Authorized members see metadata | Member requests upload intent; backend creates pending record | Backend verifies/finalizes only | Backend deletion/reconciliation |
+| dataset_versions | Authorized members | Backend finalizes version only | Never after finalization | Backend dependency-aware deletion |
+| processing_jobs | Members, sanitized errors | Member requests through API | Backend/worker only; terminal state frozen | Backend retention only |
+| job_attempts | Members, sanitized detail | Backend/worker only | Backend/worker finalizes attempt | Backend retention only |
+| analysis_runs | Members | Member requests analysis through API | Backend/worker; completed result frozen | Backend deletion workflow |
+| findings | Members authorized for parent | Backend/worker only | Content immutable; user disposition is a separate audited transition | Backend parent retention |
+| finding_evidence | Same as finding | Backend/worker only | Never after insertion | Backend with finding/artifact |
+| pipeline_definitions | Workspace members | Editor creates draft | Editor edits draft metadata | Editor may archive; physical deletion backend only if unreferenced |
+| pipeline_versions | Workspace members | Editor requests; backend creates/publishes | Draft only; published version protected | No client delete; backend only if unreferenced |
+| pipeline_steps | Members of parent workspace | Editor on draft only | Editor on draft only | Editor on draft only; published steps frozen |
+| cleaning_executions | Workspace members | Member requests; backend creates | Backend/worker while running; terminal frozen | Backend dependency-aware retention |
+| visualization_specs | Workspace members | Member/editor | Creator/editor may change draft | Creator/editor request; backend checks dependencies |
+| artifacts | Members see metadata; download separately authorized | Backend only | Backend lifecycle only; ready object identity frozen | Backend deletion/reconciliation only |
+| reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |
+| audit_events | Workspace owner/admin; restricted audited support | Trusted service only | Never | No client delete; approved retention purge only |
+| readiness_profiles | Workspace members | Editor creates draft | Editor draft only | Archive; physical delete backend if unreferenced |
+| readiness_profile_versions | Members | Editor requests, backend creates/publishes | Draft only; published protected | No client delete when referenced |
+| readiness_assessments | Workspace members | Member requests; backend writes | Backend while running; completed frozen | Backend deletion workflow |
+| readiness_dimension_scores | Members authorized for assessment | Backend/worker only | Never | Backend with assessment |
+| experiments | Workspace members | Member creates via API | Creator/editor draft only; freeze before training | Draft only if no runs; backend enforces |
+| algorithm_recommendations | Members authorized for experiment | Backend/worker only | Never after creation | Backend with experiment |
+| training_runs | Workspace members | Member requests; backend creates | Worker/backend transitions; terminal frozen | Backend with experiment/artifact lifecycle |
+| evaluation_metrics | Members authorized for run | Worker/backend only | Never after completion | Backend with run |
+| model_comparisons | Workspace members | Member requests; backend validates run set | Never after creation | Backend with experiment |
+| model_comparison_runs | Members via comparison | Backend only | Never after creation | Backend with comparison |
+| token_wallets | Members read scoped summary | Backend bootstrap only | Atomic billing routine only | Never by client |
+| token_ledger_entries | Members read scoped history | Trusted billing routine only | Never; correction is a compensating entry | Never by client |
+| operation_prices | Published quote values | Trusted admin/backend only | New version only | No delete when referenced |
+| discount_rules | Published tiers | Trusted admin/backend only | New effective version only | No delete when referenced |
+| payment_orders | Workspace members read scoped order | Backend creates | Verified provider webhook/backend only | Never by client |
+| token_reservations | Members read scoped reservation | Billing routine only | Billing routine/job settlement only | Never by client |
+| usage_events | Members read scoped usage | Backend operation finalizer only | Never after posting | Never by client |
+
+These permissions do not replace API checks for every referenced resource. Same-workspace composite FKs prevent cross-tenant references even if an attacker guesses a UUID. Storage policies independently check workspace membership and object metadata association; database RLS alone does not authorize bytes.
+
 Server service-role credentials bypass RLS and belong only in backend secret storage, never browser or logs; rotate and audit use. API authorization must validate workspace role and each referenced object. Storage policies complement RLS by checking membership/object metadata association. A private DB row must never map to public URL. Signed URLs are short-lived bearer credentials.
 
 Minimize profile data, log no raw file contents/secrets/signed URLs, sanitize worker errors, and bound evidence/result JSON. Deletion requests block access and new work, cancel active jobs, revoke signing, remove objects asynchronously, then purge/anonymize DB records by approved retention rules. Keep required billing/audit records only for reviewed purposes/durations.
