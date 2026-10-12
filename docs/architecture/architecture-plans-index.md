@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plan 2–5 are drafted for review. Plans 6–7 remain pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
+This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plans 2–6 are drafted for review. Plan 7 remains pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
 
 ## Plan sequence
 
@@ -13,7 +13,7 @@ This index tracks the seven architecture plans required before full application 
 | 3 | Backend Architecture | Drafted for review | Plans 1–2; Plan 4 processing contracts; coordinates API, identity, jobs, integrations, and billing |
 | 4 | Processing Engine Architecture | Drafted for review | Plans 1–3; defines shared operation contracts consumed by browser/cloud engines and workers |
 | 5 | Frontend Architecture and complete folder/file structure | Drafted for review | Plans 1–4; Plan 6 security/privacy feedback and Plan 7 implementation gates |
-| 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier plans |
+| 6 | Security, Privacy, Reliability, and Scaling | Drafted for review | Plans 1–5; informs Plan 7 launch gates and earlier plan revisions |
 | 7 | Implementation, Migration, Testing, and Deployment Plan | Pending | Plans 1–6; sequences delivery and operational readiness |
 
 The order is a planning sequence, not a claim that concerns can be considered in isolation. Security, privacy, reliability, and scaling constraints should shape each earlier plan as they are developed.
@@ -81,9 +81,13 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 ## Plan 6 — Security, Privacy, Reliability, and Scaling
 
+**Status:** Drafted for review.
+
+**Documentation:** [06-security-privacy-reliability-scaling.md](06-security-privacy-reliability-scaling.md).
+
 **Known requirements:** privacy-aware browser/cloud processing, authorized cloud processing, secret hygiene, reliable validation and error handling, safe long-running work, auditability, and recovery. Avoid silent material data changes. Cost-sensitive operations need safe token reservation and reconciliation.
 
-**Open decisions:** threat model, data classification, consent and authorization, encryption, secret management, retention and deletion, tenant isolation, abuse controls, rate limits, resource quotas, backup/recovery objectives, monitoring, incident response, scaling targets, and compliance obligations. No compliance claims are implied.
+**Open decisions:** initial format/resource limits; browser persistence and consent preference; storage region/cache and signed URL lifetime; data classification/log retention; deletion policy; backup tier/RPO/RTO; quotas/on-call ownership; payment provider and refund/partial-charge rules; incident response owner. No compliance claims are implied.
 
 **Dependencies:** informed by Plans 1–5 and must feed back into them.
 
