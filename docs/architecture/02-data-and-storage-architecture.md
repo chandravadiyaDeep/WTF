@@ -37,7 +37,7 @@ All tenant rows have workspace_id. Main MVP families:
 - Identity/access: profiles, workspaces, workspace_members.
 - Ingestion: datasets, dataset_assets, dataset_versions.
 - Work/audit: processing_jobs, job_attempts, analysis_runs, findings, finding_evidence, pipeline_definitions, pipeline_versions, pipeline_steps, cleaning_executions.
-- Visualization/artifacts: visualization_specs, artifacts, reports.
+- Visualization/artifacts: visualization_specs, artifacts, reports, report_sources.
 - ML: readiness_profiles, readiness_profile_versions, readiness_assessments, readiness_dimension_scores, experiments, algorithm_recommendations, training_runs, evaluation_metrics, model_comparisons.
 - Billing when paid execution launches: token_wallets, token_ledger_entries, operation_prices, discount_rules, payment_orders, token_reservations, usage_events.
 - Later: organizations if distinct from org workspaces, API credentials/metering, integrations/webhooks, white-label config, subscriptions/entitlements, feedback.
@@ -56,6 +56,12 @@ A dataset is a logical source or structured dataset; datasets.kind distinguishes
 | Compare/report | comparison references exact runs/metric basis; report references source runs, dataset versions and template plus private artifact. |
 
 Persist profile summaries, not raw rows. Use typed columns and foreign keys for authorization, lifecycle, and joins; bounded JSONB for variable parameters and evidence. Move large payloads to Storage. Config and result rows are immutable once published/completed. Changes create a new pipeline/profile version; completed assessments retain the version they used.
+
+### Task-specific experiment and evaluation safeguards
+
+The experiment snapshot must be task-discriminated, not one universal split recipe. Classification records target/label selection and an appropriate stratification/grouping policy when used. Regression records target and split strategy. Forecasting records the time column, ordering and timezone interpretation, forecast horizon, frequency/resampling assumptions, forecast origins, gap/embargo and rolling/expanding validation windows; each fold trains only on observations earlier than its validation/test window. Clustering has no supervised target and records feature inclusion, distance/preprocessing choices and any stability protocol. These can be normalized or held in a versioned task_config document, but validation must be task-specific.
+
+Each experiment freezes dataset_version_id, task type, target/feature specification, validation protocol, split manifest, configuration hash, algorithm/software version and randomization settings where meaningful. Training and evaluation records reference that experiment and exact dataset version. Store split roles and time boundaries without copying row-level data. Training metrics, validation metrics used for selection, and held-out test metrics are distinct records; test data must not influence tuning. Forecast folds preserve temporal order and avoid future leakage. Clustering records unsupervised evaluation definitions and does not invent target metrics. Completed metrics and protocol snapshots cannot be edited; corrections create a new run.
 
 ## 3. ER diagrams
 
@@ -188,7 +194,7 @@ erDiagram
   VISUALIZATION_SPECS ||--o{ ARTIFACTS : renders
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
-  ARTIFACTS o|--o{ REPORTS : contains
+  ARTIFACTS o|--o{ REPORTS : contains\n  REPORTS ||--|{ REPORT_SOURCES : cites\n  DATASET_VERSIONS o|--o{ REPORT_SOURCES : source\n  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
 ```
 
 ### Readiness and model experiments
@@ -371,6 +377,8 @@ Do not repeat owner_user_id on every child row. Membership determines access; cr
 
 The wallet is a cached balance for display/locking, never the billing truth. Append-only ledger entries contain signed integer token delta, event type, source FK, unique idempotency key, trusted actor, timestamp, and quote/price snapshot. Posted entries are never edited/deleted; corrections use compensating entries. Store money as integer minor units plus ISO currency. Version operation prices and quantity discount tiers with effective dates. A quote snapshots quantity, tier, base/discount/final amount and currency; later price changes affect only new quotes.
 
+Wallet balances are distinct: total_tokens is the net token balance after captured spend and reversals but before active holds; reserved_tokens is held for unsettled work; available_tokens = total_tokens - reserved_tokens. All must remain nonnegative. Reserve increases reserved and decreases available without changing total. Capture decreases total and reserved by the captured amount; release decreases reserved only. Purchase/bonus credits increase total. Refunds/chargebacks are compensating ledger events; never silently clamp a negative result.
+
 Reservation lifecycle: estimate → reserve → execute → capture actual authorized cost and release unused amount on success; release on failure/cancel unless reviewed policy permits charging completed partial work. Any charge above authorization requires new user consent. Reservation states include reserved, partially captured, captured, released, and expired only if policy allows. Unique payment provider/event IDs prevent duplicate webhook credits. Refunds/chargebacks create compensating ledger movements. Retries share one logical job/reservation; attempts do not independently charge. Unique reservation transition/idempotency keys prevent repeated capture.
 
 In one transaction, lock wallet or use serializable/atomic SQL routine; verify available balance, insert reservation and ledger hold, update cache; enforce nonnegative result. On terminal job transition, capture/release, post unique ledger movement, update wallet and reservation atomically. Payment verification and operation-price writes are backend-only. Reconcile cached balance against ledger and create an audited adjustment only after investigation. Discount threshold, prices, token costs, expiration, partial billing, reservation timeout, and chargeback policy are undecided.
@@ -416,7 +424,7 @@ All exposed tenant tables enable RLS and check active workspace membership/role 
 | cleaning_executions | Workspace members | Member requests; backend creates | Backend/worker while running; terminal frozen | Backend dependency-aware retention |
 | visualization_specs | Workspace members | Member/editor | Creator/editor may change draft | Creator/editor request; backend checks dependencies |
 | artifacts | Members see metadata; download separately authorized | Backend only | Backend lifecycle only; ready object identity frozen | Backend deletion/reconciliation only |
-| reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |
+| reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |\n| report_sources | Members authorized for report | Backend inserts typed provenance links | Never after report ready | Backend with report/source retention |
 | audit_events | Workspace owner/admin; restricted audited support | Trusted service only | Never | No client delete; approved retention purge only |
 | readiness_profiles | Workspace members | Editor creates draft | Editor draft only | Archive; physical delete backend if unreferenced |
 | readiness_profile_versions | Members | Editor requests, backend creates/publishes | Draft only; published protected | No client delete when referenced |
