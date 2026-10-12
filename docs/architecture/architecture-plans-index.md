@@ -11,7 +11,7 @@ This index tracks the seven architecture plans required before full application 
 | 1 | Product and Service Workflow | Concept established; documented | Product direction; informs Plans 2–7 |
 | 2 | Database and Storage Architecture | Drafted for review | Plan 1 workflows; Plan 6 security/privacy feedback; informs Plans 3–5 |
 | 3 | Backend Architecture | Drafted for review | Plans 1–2; Plan 4 processing contracts; coordinates API, identity, jobs, integrations, and billing |
-| 4 | Processing Engine Architecture | Pending | Plans 1–3; defines operation contracts consumed by frontend and workers |
+| 4 | Processing Engine Architecture | Drafted for review | Plans 1–3; defines shared operation contracts consumed by browser/cloud engines and workers |
 | 5 | Frontend Architecture and complete folder/file structure | Pending | Plans 1–4; reflects user journeys and stable API/processing contracts |
 | 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier plans |
 | 7 | Implementation, Migration, Testing, and Deployment Plan | Pending | Plans 1–6; sequences delivery and operational readiness |
@@ -55,11 +55,15 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 ## Plan 4 — Processing Engine Architecture
 
-**Known requirements:** browser and cloud processing paths should share consistent operation contracts. Processing must validate format-specific inputs; surface quality issues and recommendations; support preview, application, and audit of transformations; produce evidence and visualizations; and avoid data leakage in evaluation. PDF extraction is a distinct stage. Model recommendations, validation, and metrics must be task-aware.
+**Status:** Drafted for review.
 
-**Open decisions:** operation contract and versioning, supported parser/extraction libraries, browser/cloud routing criteria, size and compute limits, deterministic behavior, transformation preview/rollback, task-specific readiness dimensions and thresholds, algorithm candidate selection, training budgets, reproducibility, and supported evaluation metrics.
+**Documentation:** [04-processing-engine-architecture.md](04-processing-engine-architecture.md).
 
-**Dependencies:** Plan 1 behaviors, Plan 2 storage/versioning, Plan 3 jobs and APIs, and Plan 6 security and reliability constraints.
+**Known requirements:** shared versioned operation/result contracts; format-aware ingestion including PDF table candidates; canonical dataset lineage; explicit browser/cloud routing; explainable data-aware profiling and cleaning; task-specific readiness/recommendations; leakage-safe training/evaluation; purposeful visualizations; bounded resource/cost/job behavior.
+
+**Open decisions:** first format/parser set and limits; browser capability/persistence policy; PDF extraction/OCR capability and ambiguity UX; readiness weights/thresholds; supported model/version roster and metric defaults; compute budgets and cost-estimation inputs. Numeric thresholds/prices remain unapproved.
+
+**Dependencies:** Plan 2 dataset/version/storage/job/artifact/ledger model; Plan 3 APIs, authorization, worker lifecycle, consent, billing and service boundaries. Plan 5 consumes operation, chart, finding and job status contracts.
 
 ## Plan 5 — Frontend Architecture and complete folder/file structure
 
