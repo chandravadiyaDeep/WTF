@@ -177,7 +177,7 @@ erDiagram
     uuid workspace_id FK
     uuid dataset_version_id FK
     uuid analysis_run_id FK
-    uuid comparison_id FK
+    uuid model_comparison_id FK
     int ordinal
   }
   PROFILES ||--o{ WORKSPACE_MEMBERS : joins
@@ -187,7 +187,7 @@ erDiagram
   DATASETS ||--o{ DATASET_VERSIONS : versions
   DATASETS o|--o{ DATASETS : extracted_from
   DATASET_VERSIONS o|--o{ DATASET_VERSIONS : parent_lineage
-  DATASET_VERSIONS ||--o{ ANALYSIS_RUNS : analyzed
+  DATASET_VERSIONS o|--o{ ANALYSIS_RUNS : analyzed
   PROCESSING_JOBS o|--o{ ANALYSIS_RUNS : schedules
   PROCESSING_JOBS ||--o{ JOB_ATTEMPTS : attempts
   DATASET_VERSIONS ||--o{ CLEANING_EXECUTIONS : input
@@ -199,13 +199,13 @@ erDiagram
   ANALYSIS_RUNS o|--o{ FINDINGS : detects
   CLEANING_EXECUTIONS o|--o{ FINDINGS : explains
   FINDINGS ||--o{ FINDING_EVIDENCE : supported_by
-  VISUALIZATION_SPECS ||--o{ ARTIFACTS : renders
+  VISUALIZATION_SPECS o|--o{ ARTIFACTS : renders
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
   ARTIFACTS o|--o{ REPORTS : contains
   REPORTS ||--|{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
-  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
+  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source\n  CLEANING_EXECUTIONS o|--o{ REPORT_SOURCES : source\n  READINESS_ASSESSMENTS o|--o{ REPORT_SOURCES : source\n  MODEL_COMPARISONS o|--o{ REPORT_SOURCES : source
   REPORTS ||--|{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
   ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
@@ -278,11 +278,11 @@ erDiagram
     uuid training_run_id PK, FK
     int ordinal
   }
-  DATASET_VERSIONS ||--o{ READINESS_ASSESSMENTS : assessed
+  DATASET_VERSIONS o|--o{ READINESS_ASSESSMENTS : assessed
   READINESS_PROFILES ||--o{ READINESS_PROFILE_VERSIONS : versions
   READINESS_PROFILE_VERSIONS ||--o{ READINESS_ASSESSMENTS : snapshots
   READINESS_ASSESSMENTS ||--o{ READINESS_DIMENSION_SCORES : scores
-  DATASET_VERSIONS ||--o{ EXPERIMENTS : source
+  DATASET_VERSIONS o|--o{ EXPERIMENTS : source
   EXPERIMENTS ||--o{ ALGORITHM_RECOMMENDATIONS : recommends
   EXPERIMENTS ||--o{ TRAINING_RUNS : runs
   ALGORITHM_RECOMMENDATIONS o|--o{ TRAINING_RUNS : selected_candidate
