@@ -191,6 +191,10 @@ erDiagram
     uuid id PK
     uuid workspace_id FK
   }
+  TRAINING_RUNS {
+    uuid id PK
+    uuid workspace_id FK
+  }
   REPORT_SOURCES {
     uuid report_id PK, FK
     uuid workspace_id FK
@@ -223,6 +227,10 @@ erDiagram
   VISUALIZATION_SPECS ||--o{ VISUALIZATION_SOURCES : uses
   DATASET_VERSIONS o|--o{ VISUALIZATION_SOURCES : source
   ANALYSIS_RUNS o|--o{ VISUALIZATION_SOURCES : source
+  CLEANING_EXECUTIONS o|--o{ VISUALIZATION_SOURCES : source
+  READINESS_ASSESSMENTS o|--o{ VISUALIZATION_SOURCES : source
+  TRAINING_RUNS o|--o{ VISUALIZATION_SOURCES : source
+  MODEL_COMPARISONS o|--o{ VISUALIZATION_SOURCES : source
   VISUALIZATION_SPECS o|--o{ ARTIFACTS : renders
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
@@ -476,6 +484,7 @@ All exposed tenant tables enable RLS and check active workspace membership/role 
 | pipeline_steps | Members of parent workspace | Editor on draft only | Editor on draft only | Editor on draft only; published steps frozen |
 | cleaning_executions | Workspace members | Member requests; backend creates | Backend/worker while running; terminal frozen | Backend dependency-aware retention |
 | visualization_specs | Workspace members | Member/editor | Creator/editor may change draft | Creator/editor request; backend checks dependencies |
+| visualization_sources | Members authorized for visualization | Backend/API validates source links | Never after chart is saved | Backend with visualization/source retention |
 | artifacts | Members see metadata; download separately authorized | Backend only | Backend lifecycle only; ready object identity frozen | Backend deletion/reconciliation only |
 | reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |
 | report_sources | Members authorized for report | Backend inserts typed provenance links | Never after report ready | Backend with report/source retention |
