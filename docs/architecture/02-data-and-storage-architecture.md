@@ -194,7 +194,10 @@ erDiagram
   VISUALIZATION_SPECS ||--o{ ARTIFACTS : renders
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
-  ARTIFACTS o|--o{ REPORTS : contains\n  REPORTS ||--|{ REPORT_SOURCES : cites\n  DATASET_VERSIONS o|--o{ REPORT_SOURCES : source\n  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
+  ARTIFACTS o|--o{ REPORTS : contains
+  REPORTS ||--|{ REPORT_SOURCES : cites
+  DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
+  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
 ```
 
 ### Readiness and model experiments
@@ -424,7 +427,8 @@ All exposed tenant tables enable RLS and check active workspace membership/role 
 | cleaning_executions | Workspace members | Member requests; backend creates | Backend/worker while running; terminal frozen | Backend dependency-aware retention |
 | visualization_specs | Workspace members | Member/editor | Creator/editor may change draft | Creator/editor request; backend checks dependencies |
 | artifacts | Members see metadata; download separately authorized | Backend only | Backend lifecycle only; ready object identity frozen | Backend deletion/reconciliation only |
-| reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |\n| report_sources | Members authorized for report | Backend inserts typed provenance links | Never after report ready | Backend with report/source retention |
+| reports | Workspace members | Member requests; backend creates | Backend/worker status only; ready provenance frozen | Backend retention/deletion workflow |
+| report_sources | Members authorized for report | Backend inserts typed provenance links | Never after report ready | Backend with report/source retention |
 | audit_events | Workspace owner/admin; restricted audited support | Trusted service only | Never | No client delete; approved retention purge only |
 | readiness_profiles | Workspace members | Editor creates draft | Editor draft only | Archive; physical delete backend if unreferenced |
 | readiness_profile_versions | Members | Editor requests, backend creates/publishes | Draft only; published protected | No client delete when referenced |
