@@ -57,42 +57,296 @@ A dataset is a logical source or structured dataset; datasets.kind distinguishes
 
 Persist profile summaries, not raw rows. Use typed columns and foreign keys for authorization, lifecycle, and joins; bounded JSONB for variable parameters and evidence. Move large payloads to Storage. Config and result rows are immutable once published/completed. Changes create a new pipeline/profile version; completed assessments retain the version they used.
 
-## 3. ER diagram
+## 3. ER diagrams
+
+The following Mermaid diagrams split the MVP into readable domains. The FK fields shown are essential references; workspace_id on tenant tables is a same-workspace composite FK dimension in addition to each parent FK. A relationship means a declared FK unless specifically marked as lineage or a normalized join. Nullable FKs represent optional stages (for example a local-only run may not have a cloud dataset version).
+
+### Identity, ingestion, processing, analysis, cleaning, and exports
 
 ```mermaid
 erDiagram
-  AUTH_USERS ||--o| PROFILES : maps
+  PROFILES {
+    uuid user_id PK
+  }
+  WORKSPACES {
+    uuid id PK
+    uuid personal_owner_id FK
+  }
+  WORKSPACE_MEMBERS {
+    uuid workspace_id PK, FK
+    uuid user_id PK, FK
+    text role
+  }
+  DATASETS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid source_dataset_id FK
+    text kind
+  }
+  DATASET_ASSETS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_id FK
+    text storage_mode
+    text object_key
+  }
+  DATASET_VERSIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_id FK
+    uuid parent_version_id FK
+    uuid asset_id FK
+  }
+  PROCESSING_JOBS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    text idempotency_key
+    text status
+  }
+  JOB_ATTEMPTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid job_id FK
+    int attempt_no
+  }
+  ANALYSIS_RUNS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    uuid job_id FK
+  }
+  FINDINGS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid analysis_run_id FK
+    uuid cleaning_execution_id FK
+  }
+  FINDING_EVIDENCE {
+    uuid id PK
+    uuid workspace_id FK
+    uuid finding_id FK
+    uuid artifact_id FK
+  }
+  PIPELINE_DEFINITIONS {
+    uuid id PK
+    uuid workspace_id FK
+  }
+  PIPELINE_VERSIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid pipeline_id FK
+  }
+  PIPELINE_STEPS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid pipeline_version_id FK
+  }
+  CLEANING_EXECUTIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid pipeline_version_id FK
+    uuid input_version_id FK
+    uuid output_version_id FK
+    uuid job_id FK
+  }
+  VISUALIZATION_SPECS {
+    uuid id PK
+    uuid workspace_id FK
+  }
+  ARTIFACTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid visualization_spec_id FK
+    text object_key
+  }
+  REPORTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid job_id FK
+    uuid artifact_id FK
+  }
   PROFILES ||--o{ WORKSPACE_MEMBERS : joins
   WORKSPACES ||--|{ WORKSPACE_MEMBERS : grants
   WORKSPACES ||--o{ DATASETS : owns
-  DATASETS ||--o{ DATASET_ASSETS : source
+  DATASETS ||--o{ DATASET_ASSETS : has
   DATASETS ||--o{ DATASET_VERSIONS : versions
-  DATASET_VERSIONS o|--o{ DATASET_VERSIONS : lineage
+  DATASETS o|--o{ DATASETS : extracted_from
+  DATASET_VERSIONS o|--o{ DATASET_VERSIONS : parent_lineage
   DATASET_VERSIONS ||--o{ ANALYSIS_RUNS : analyzed
+  PROCESSING_JOBS o|--o{ ANALYSIS_RUNS : schedules
+  PROCESSING_JOBS ||--o{ JOB_ATTEMPTS : attempts
+  DATASET_VERSIONS ||--o{ CLEANING_EXECUTIONS : input
+  DATASET_VERSIONS o|--o{ CLEANING_EXECUTIONS : output
   PIPELINE_DEFINITIONS ||--o{ PIPELINE_VERSIONS : versions
   PIPELINE_VERSIONS ||--|{ PIPELINE_STEPS : defines
   PIPELINE_VERSIONS ||--o{ CLEANING_EXECUTIONS : executes
-  DATASET_VERSIONS ||--o{ CLEANING_EXECUTIONS : input
-  PROCESSING_JOBS ||--o{ JOB_ATTEMPTS : attempts
-  PROCESSING_JOBS o|--o{ ANALYSIS_RUNS : schedules
   PROCESSING_JOBS o|--o{ CLEANING_EXECUTIONS : schedules
-  ANALYSIS_RUNS ||--o{ FINDINGS : detects
-  FINDINGS ||--o{ FINDING_EVIDENCE : supported
-  WORKSPACES ||--o{ READINESS_PROFILE_VERSIONS : configures
-  READINESS_PROFILE_VERSIONS ||--o{ READINESS_ASSESSMENTS : snapshots
-  READINESS_ASSESSMENTS ||--o{ READINESS_DIMENSION_SCORES : scores
-  EXPERIMENTS ||--o{ ALGORITHM_RECOMMENDATIONS : recommends
-  EXPERIMENTS ||--o{ TRAINING_RUNS : runs
-  TRAINING_RUNS ||--o{ EVALUATION_METRICS : measures
-  MODEL_COMPARISONS }o--o{ TRAINING_RUNS : compares
-  REPORTS }o--|| ARTIFACTS : file
-  WORKSPACES ||--o{ TOKEN_WALLETS : owns
-  TOKEN_WALLETS ||--o{ TOKEN_LEDGER_ENTRIES : ledger
-  TOKEN_RESERVATIONS ||--o{ TOKEN_LEDGER_ENTRIES : settles
-  PROCESSING_JOBS o|--o{ TOKEN_RESERVATIONS : reserves
+  ANALYSIS_RUNS o|--o{ FINDINGS : detects
+  CLEANING_EXECUTIONS o|--o{ FINDINGS : explains
+  FINDINGS ||--o{ FINDING_EVIDENCE : supported_by
+  VISUALIZATION_SPECS ||--o{ ARTIFACTS : renders
+  ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
+  PROCESSING_JOBS o|--o{ REPORTS : generates
+  ARTIFACTS o|--o{ REPORTS : contains
 ```
 
-The diagram omits later-phase tables and some same-workspace FKs for legibility. Avoid circular FKs. For ledger source integrity, use typed nullable FKs with a check that exactly one applies or a normalized source table; do not rely solely on unvalidated entity_type/entity_id pairs.
+### Readiness and model experiments
+
+```mermaid
+erDiagram
+  READINESS_PROFILES {
+    uuid id PK
+    uuid workspace_id FK
+  }
+  READINESS_PROFILE_VERSIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid profile_id FK
+    int version_no
+  }
+  READINESS_ASSESSMENTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    uuid profile_version_id FK
+    text task_type
+  }
+  READINESS_DIMENSION_SCORES {
+    uuid id PK
+    uuid workspace_id FK
+    uuid assessment_id FK
+    text dimension_code
+  }
+  EXPERIMENTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    text task_type
+    jsonb validation_protocol
+    jsonb split_manifest
+  }
+  ALGORITHM_RECOMMENDATIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid experiment_id FK
+    int rank
+  }
+  TRAINING_RUNS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid experiment_id FK
+    uuid dataset_version_id FK
+    uuid recommendation_id FK
+    uuid job_id FK
+    uuid model_artifact_id FK
+  }
+  EVALUATION_METRICS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid training_run_id FK
+    text split_role
+    text metric_code
+  }
+  MODEL_COMPARISONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid experiment_id FK
+  }
+  MODEL_COMPARISON_RUNS {
+    uuid comparison_id PK, FK
+    uuid training_run_id PK, FK
+    int ordinal
+  }
+  DATASET_VERSIONS ||--o{ READINESS_ASSESSMENTS : assessed
+  READINESS_PROFILES ||--o{ READINESS_PROFILE_VERSIONS : versions
+  READINESS_PROFILE_VERSIONS ||--o{ READINESS_ASSESSMENTS : snapshots
+  READINESS_ASSESSMENTS ||--o{ READINESS_DIMENSION_SCORES : scores
+  DATASET_VERSIONS ||--o{ EXPERIMENTS : source
+  EXPERIMENTS ||--o{ ALGORITHM_RECOMMENDATIONS : recommends
+  EXPERIMENTS ||--o{ TRAINING_RUNS : runs
+  ALGORITHM_RECOMMENDATIONS o|--o{ TRAINING_RUNS : selected_candidate
+  PROCESSING_JOBS o|--o{ TRAINING_RUNS : schedules
+  TRAINING_RUNS ||--o{ EVALUATION_METRICS : measures
+  MODEL_COMPARISONS ||--|{ MODEL_COMPARISON_RUNS : includes
+  TRAINING_RUNS ||--o{ MODEL_COMPARISON_RUNS : compared_in
+```
+
+### Token economy and payment
+
+```mermaid
+erDiagram
+  WORKSPACES {
+    uuid id PK
+  }
+  TOKEN_WALLETS {
+    uuid id PK
+    uuid workspace_id FK
+    bigint total_tokens
+    bigint reserved_tokens
+    bigint available_tokens
+  }
+  TOKEN_LEDGER_ENTRIES {
+    uuid id PK
+    uuid workspace_id FK
+    uuid wallet_id FK
+    uuid reservation_id FK
+    uuid source_payment_id FK
+    uuid usage_event_id FK
+    bigint delta_total
+    bigint delta_reserved
+    text idempotency_key
+  }
+  OPERATION_PRICES {
+    uuid id PK
+    text operation_code
+    int version
+    bigint token_cost
+  }
+  DISCOUNT_RULES {
+    uuid id PK
+    int version
+    bigint minimum_quantity
+  }
+  PAYMENT_ORDERS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid discount_rule_id FK
+    text provider_event_id
+    bigint quantity
+    bigint amount_minor
+  }
+  TOKEN_RESERVATIONS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid wallet_id FK
+    uuid job_id FK
+    uuid operation_price_id FK
+    bigint authorized_max
+    bigint captured
+    bigint released
+    text idempotency_key
+  }
+  USAGE_EVENTS {
+    uuid id PK
+    uuid workspace_id FK
+    uuid job_id FK
+    uuid reservation_id FK
+    uuid price_version_id FK
+    bigint actual_tokens
+  }
+  PROCESSING_JOBS ||--o| TOKEN_RESERVATIONS : holds
+  WORKSPACES ||--|| TOKEN_WALLETS : owns
+  TOKEN_WALLETS ||--o{ TOKEN_LEDGER_ENTRIES : records
+  TOKEN_RESERVATIONS ||--o{ TOKEN_LEDGER_ENTRIES : settles
+  PAYMENT_ORDERS ||--o{ TOKEN_LEDGER_ENTRIES : credits_or_refunds
+  USAGE_EVENTS o|--o{ TOKEN_LEDGER_ENTRIES : captures
+  OPERATION_PRICES ||--o{ TOKEN_RESERVATIONS : quotes
+  OPERATION_PRICES ||--o{ USAGE_EVENTS : prices
+  DISCOUNT_RULES o|--o{ PAYMENT_ORDERS : discounts
+```
+
+Diagram constraints: AUTH users are Supabase-managed and shown as PROFILES' external FK rather than an application entity. Dataset self-lineage is one-way parent_version_id; cleaning execution points to input/output versions, avoiding a reciprocal produced_by FK. Extracted child datasets use source_dataset_id. A PDF candidate can point to a child dataset only after successful extraction. Ledger entries use typed nullable FKs and a CHECK enforcing the permitted source combination; they do not depend on arbitrary type/id pairs. Composite workspace FKs are summarized above and detailed in the data dictionary.
 
 ## 4. Ownership and provenance
 
