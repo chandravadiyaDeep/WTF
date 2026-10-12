@@ -2,18 +2,18 @@
 
 ## Purpose
 
-This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). The remaining plans are pending. “Known requirements” below record constraints already stated in the project brief; unresolved choices are not approvals.
+This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plan 2 is drafted for review. Plans 3–7 remain pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
 
 ## Plan sequence
 
 | # | Plan | Status | Key dependencies |
 |---|---|---|---|
 | 1 | Product and Service Workflow | Concept established; documented | Product direction; informs Plans 2–7 |
-| 2 | Database and Storage Architecture | Pending | Plan 1 workflows, privacy and recovery needs; informs API, processing, and security plans |
+| 2 | Database and Storage Architecture | Drafted for review | Plan 1 workflows; Plan 6 security/privacy feedback; informs Plans 3–5 |
 | 3 | Backend Architecture | Pending | Plans 1–2; coordinates API, identity, jobs, integrations, and billing |
 | 4 | Processing Engine Architecture | Pending | Plans 1–3; defines operation contracts consumed by frontend and workers |
 | 5 | Frontend Architecture and complete folder/file structure | Pending | Plans 1–4; reflects user journeys and stable API/processing contracts |
-| 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier decisions |
+| 6 | Security, Privacy, Reliability, and Scaling | Pending | Plans 1–5; cross-cutting requirements should also inform earlier plans |
 | 7 | Implementation, Migration, Testing, and Deployment Plan | Pending | Plans 1–6; sequences delivery and operational readiness |
 
 The order is a planning sequence, not a claim that concerns can be considered in isolation. Security, privacy, reliability, and scaling constraints should shape each earlier plan as they are developed.
@@ -28,11 +28,18 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 ## Plan 2 — Database and Storage Architecture
 
-**Known requirements:** Supabase Auth and PostgreSQL are the intended direction for identity and relational application data. Storage needs an abstraction for browser/local and cloud processing paths. Preserve auditability, privacy, recovery, and processing history.
+**Known requirements:** Supabase Auth and PostgreSQL are intended directions. The architecture uses workspace-scoped relational state, private object storage for cloud data/artifacts, a no-fake-object browser-local path, immutable dataset/config/result provenance, durable job metadata, and a ledger/reservation model for token billing. PDF documents are distinct from extracted canonical tables. The proposal recommends private Supabase Storage as the initial object store and personal workspaces with a future membership path.
 
-**Open decisions:** entities and schemas, tenancy and authorization boundaries, file/object storage provider, encryption and key ownership, retention/deletion, versioning and recovery model, metadata boundaries, migration approach, and handling of derived artifacts. Do not treat a PDF as structured tabular data without an extraction step.
+**Documentation:**
+- [02-data-and-storage-architecture.md](02-data-and-storage-architecture.md)
+- [Data dictionary](../database/data-dictionary.md)
+- [Storage and retention matrix](../database/storage-and-retention-matrix.md)
 
-**Dependencies:** Plan 1 workflow and Plan 6 privacy/security constraints; provides durable contracts to Plans 3–5.
+**Open decisions requiring review:** browser persistence and metadata privacy defaults; cloud-consent model; retention, deletion, legal holds and backup objectives; personal-only launch vs team invitations; paid partial completion, reservation expiry, promo expiry and chargebacks; file/result limits and storage region/provider fit; model/prediction retention; account-deletion treatment of financial records. Pricing values and thresholds remain intentionally unset.
+
+**Dependencies:** Plan 1 workflow, task families, privacy principles, explainability, recovery and billing intent. Plan 6 must review threat model, data minimization, retention, access and recovery assumptions. Plan 3 must define API/service-role boundaries, profile provisioning, upload/signed-URL/deletion flows, atomic billing routines, queue/lease/outbox, retries, cancellation and reconciliation.
+
+**Status rule:** this is a draft only. Do not start Plan 3 until the user reviews and approves Plan 2.
 
 ## Plan 3 — Backend Architecture
 
@@ -40,7 +47,7 @@ The order is a planning sequence, not a claim that concerns can be considered in
 
 **Open decisions:** API boundaries/versioning, authorization model, job orchestration and idempotency, event/status mechanism, retries and cancellation, integration contracts, observability, error model, and billing ledger/reservation interfaces.
 
-**Dependencies:** data and storage choices in Plan 2 and processing contracts in Plan 4.
+**Dependencies:** Plan 2 data/storage choices and Plan 4 processing contracts.
 
 ## Plan 4 — Processing Engine Architecture
 
