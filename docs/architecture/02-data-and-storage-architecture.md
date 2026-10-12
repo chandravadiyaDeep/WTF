@@ -37,7 +37,7 @@ All tenant rows have workspace_id. Main MVP families:
 - Identity/access: profiles, workspaces, workspace_members.
 - Ingestion: datasets, dataset_assets, dataset_versions.
 - Work/audit: processing_jobs, job_attempts, analysis_runs, findings, finding_evidence, pipeline_definitions, pipeline_versions, pipeline_steps, cleaning_executions.
-- Visualization/artifacts: visualization_specs, artifacts, reports, report_sources.
+- Visualization/artifacts: visualization_specs, visualization_sources, artifacts, reports, report_sources.
 - ML: readiness_profiles, readiness_profile_versions, readiness_assessments, readiness_dimension_scores, experiments, algorithm_recommendations, training_runs, evaluation_metrics, model_comparisons.
 - Billing when paid execution launches: token_wallets, token_ledger_entries, operation_prices, discount_rules, payment_orders, token_reservations, usage_events.
 - Later: organizations if distinct from org workspaces, API credentials/metering, integrations/webhooks, white-label config, subscriptions/entitlements, feedback.
@@ -160,6 +160,17 @@ erDiagram
     uuid id PK
     uuid workspace_id FK
   }
+  VISUALIZATION_SOURCES {
+    uuid visualization_spec_id PK, FK
+    uuid workspace_id FK
+    uuid dataset_version_id FK
+    uuid analysis_run_id FK
+    uuid cleaning_execution_id FK
+    uuid readiness_assessment_id FK
+    uuid training_run_id FK
+    uuid model_comparison_id FK
+    int ordinal
+  }
   ARTIFACTS {
     uuid id PK
     uuid workspace_id FK
@@ -209,6 +220,9 @@ erDiagram
   ANALYSIS_RUNS o|--o{ FINDINGS : detects
   CLEANING_EXECUTIONS o|--o{ FINDINGS : explains
   FINDINGS ||--o{ FINDING_EVIDENCE : supported_by
+  VISUALIZATION_SPECS ||--o{ VISUALIZATION_SOURCES : uses
+  DATASET_VERSIONS o|--o{ VISUALIZATION_SOURCES : source
+  ANALYSIS_RUNS o|--o{ VISUALIZATION_SOURCES : source
   VISUALIZATION_SPECS o|--o{ ARTIFACTS : renders
   ARTIFACTS o|--o{ FINDING_EVIDENCE : visual_evidence
   PROCESSING_JOBS o|--o{ REPORTS : generates
