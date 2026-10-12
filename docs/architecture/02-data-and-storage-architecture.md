@@ -177,6 +177,8 @@ erDiagram
     uuid workspace_id FK
     uuid dataset_version_id FK
     uuid analysis_run_id FK
+    uuid cleaning_execution_id FK
+    uuid readiness_assessment_id FK
     uuid model_comparison_id FK
     int ordinal
   }
@@ -205,7 +207,10 @@ erDiagram
   ARTIFACTS o|--o{ REPORTS : contains
   REPORTS ||--|{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
-  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source\n  CLEANING_EXECUTIONS o|--o{ REPORT_SOURCES : source\n  READINESS_ASSESSMENTS o|--o{ REPORT_SOURCES : source\n  MODEL_COMPARISONS o|--o{ REPORT_SOURCES : source
+  ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
+  CLEANING_EXECUTIONS o|--o{ REPORT_SOURCES : source
+  READINESS_ASSESSMENTS o|--o{ REPORT_SOURCES : source
+  MODEL_COMPARISONS o|--o{ REPORT_SOURCES : source
   REPORTS ||--|{ REPORT_SOURCES : cites
   DATASET_VERSIONS o|--o{ REPORT_SOURCES : source
   ANALYSIS_RUNS o|--o{ REPORT_SOURCES : source
