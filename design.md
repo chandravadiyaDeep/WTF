@@ -9,6 +9,12 @@ This document defines a lasting, implementation-ready visual direction for NUMPA
 - Reference page description: real-time commerce analytics for store owners/managers, focused on key metrics, trends, segments, time ranges, scannability and actionable information.
 - Audience for NUMPA: freelance data analysts preparing datasets and assessing their readiness for ML.
 
+### Supplied visual reference
+
+![User-supplied Urban Sound Dashboard screenshot](docs/architecture/references/urban-sound-dashboard-reference.png)
+
+*User-supplied screenshot associated with the Urban Sound Dashboard reference, included for visual study. NUMPA should adapt general hierarchy and readability principles; the commerce metrics and artwork are not NUMPA requirements.*
+
 ## 2. Reference summary and design objectives
 
 The reference page describes a dark analytics dashboard that puts critical business metrics first and supports deeper analysis through trends, segments and time filters. Its stated UX goal is to make complex data intuitive, scannable and actionable. Its visual intent is to use dark surfaces and contrast/accent colors to emphasize visualizations during frequent use.
@@ -32,10 +38,11 @@ NUMPA should not carry over commerce concepts such as revenue, orders, store hea
 | The description mentions key metrics, trends, segments and time-based filters. | Verified page description |
 | The author says the interface prioritizes critical business metrics, uses visual hierarchy, and chose a dark theme to emphasize data visualization with contrast/accent colors. | Verified design-process text |
 | The published palette contains the six exact hex values listed in Section 4. | Verified page palette |
-| Exact dashboard component arrangement, chart types, typeface, sizing, spacing, card shape, navigation, animations, hover behavior and detailed color assignments. | Not verified; shot image fetch was unavailable for visual inspection |
+| Visible dashboard structure: grouped left navigation, dashboard heading and time filters, sales performance chart with tooltip/insight rail, four metric cards, customer-segment blocks and top-category chart. | Directly observed in the user-supplied screenshot; screenshot provenance is not independently verified |
+| Exact typeface, dimensions, spacing values, animation, interaction behavior and detailed color assignments. | Not verified from the supplied static screenshot |
 | The proposed NUMPA colors, layout, components, type scale, spacing, states and screen compositions below. | NUMPA design recommendations, not claims about Layo's original design |
 
-The Dribbble page text and palette were available, but the actual shot image could not be inspected: the image preview request returned a cache miss. Therefore this document does not assert unverified screenshot details.
+The Dribbble page text and palette were available, and the user supplied a screenshot now embedded above. Screenshot observations are limited to visible static content and layout; provenance is not independently verified. This document does not infer hidden interactions or exact measurements.
 
 ## 4. Original published color palette
 
@@ -257,7 +264,7 @@ Recommended layout breakpoints: compact/mobile below 640 px; tablet 640–1023 p
 
 ## 14. Reference limitations and open questions
 
-The screenshot itself was unavailable for inspection, so exact geometry, typography, component treatment, chart forms, navigation, spacing and interaction patterns remain unknown. The page description and palette are verified; NUMPA-specific implementation recommendations are explicitly proposed.
+The Dribbble image could not be fetched directly. A user-supplied screenshot associated with the reference is embedded in Section 1. Its visible layout and component types can be observed, but exact measurements, typeface, animations and interaction behavior remain unknown. Screenshot provenance is not independently verified. The page description and palette are verified; NUMPA-specific implementation recommendations are explicitly proposed.
 
 Open design decisions for a later prototype review: light-theme alternative and user preference; final font asset/license; exact logo/brand mark; whether dashboard supports multiple workspaces; charting library implementation; data table behavior for very wide datasets; and final numeric token values after contrast testing.
 
