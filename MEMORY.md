@@ -38,6 +38,7 @@ Index: [architecture plans index](docs/architecture/architecture-plans-index.md)
 
 ## Project history
 
+- 2026-10-13 — Created this concise project memory with the architecture direction, Plans 1–6 state, open decisions and an ongoing dated-log rule. Initial record: [commit](https://github.com/chandravadiyaDeep/WTF/commit/5fc28daca3db489f1e1f4c4f5c3ff45814d017f6).
 - 2026-10-12 — Connected work to repository WTF and used branch docs/numpa-v2-architecture.
 - 2026-10-12 — Reviewed Plans 1–3 as inputs; drafted Plan 4 and indexed it. Plan 4 established shared processing contracts, explicit browser/cloud routing, cleaning previews, evidence, gated readiness scoring and leakage-safe evaluation.
 - 2026-10-12 — Added Plan 5 frontend architecture and proposed website tree; updated index. Architecture only; no website code.
