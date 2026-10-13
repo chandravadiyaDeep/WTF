@@ -2,6 +2,8 @@
 
 ## Purpose
 
+Project handoff record: [MEMORY.md](../../MEMORY.md) summarizes current architecture, progress, open decisions and how to maintain the activity history.
+
 This index tracks the seven architecture plans required before full application implementation. Plan 1 is established conceptually and documented in [00-product-brief.md](00-product-brief.md) and [01-product-and-service-workflow.md](01-product-and-service-workflow.md). Plans 2–6 are drafted for review. Plan 7 remains pending. “Known requirements” record stated constraints; unresolved choices are not approvals.
 
 ## Plan sequence
