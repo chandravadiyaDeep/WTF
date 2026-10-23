@@ -2,7 +2,7 @@
 
 NUMPA is an explainable, largely automated data-to-ML platform for technical and non-technical users. It aims to guide users from data upload and validation through analysis, cleaning, visualization, task-specific ML readiness, model recommendations, evaluation, and downloadable reports.
 
-The product is being designed before full application implementation. The initial scope is to preserve the product workflow and record architecture plans, dependencies, and unresolved decisions.
+Architecture-first planning is documented. MVP implementation has started with a browser-local CSV profiling and cleaning workflow; cloud services, identity, and model training remain out of scope for this first slice.
 
 ## Product principles
 
@@ -23,4 +23,8 @@ The intended direction is a Next.js and TypeScript frontend, a Python and FastAP
 - [Product and service workflow](docs/architecture/01-product-and-service-workflow.md)
 - [Architecture plans index](docs/architecture/architecture-plans-index.md)
 
-The architecture-first process contains seven plans. Plans 2–7 must be documented and reviewed before full application implementation begins.
+The architecture set contains seven plans. Plans 2–6 remain drafts for review. The first MVP slice proceeds by explicit project direction while consequential backend, billing, privacy-retention, and production decisions remain open.
+
+## MVP implementation
+
+The first usable slice is in [`apps/web`](apps/web/README.md): upload a CSV, inspect inferred field types and quality signals, review an exact cleanup preview, apply changes only to the in-memory working copy, and export a prepared CSV. The browser does not upload or persist the source file. CSV import is capped at 10 MB, 20,000 data rows, and 80 columns. This slice has no account, cloud processing, Excel/PDF support, readiness score, or model training.

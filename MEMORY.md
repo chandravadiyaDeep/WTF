@@ -7,8 +7,8 @@ Purpose: concise handoff record from project start to current state. Read this f
 - Repository: chandravadiyaDeep/WTF
 - Working branch: docs/numpa-v2-architecture
 - Product: NUMPA v2, a data analysis and ML workflow: upload, understand, clean, visualize, assess ML readiness, train, evaluate, compare and report.
-- Current phase: architecture documentation. The plans did not implement application code, database migrations, deployment, or packages.
-- Last updated: 2026-10-13 (Asia/Calcutta).
+- Current phase: first MVP implementation slice. Browser-local CSV profiling/cleanup UI exists under apps/web; backend, database migrations, deployment, and identity are not implemented.
+- Last updated: 2026-10-23 (Asia/Calcutta).
 
 ## Architecture direction
 
@@ -38,6 +38,8 @@ Index: [architecture plans index](docs/architecture/architecture-plans-index.md)
 
 ## Project history
 
+- 2026-10-23 — Started MVP by explicit user direction. Added a Next.js browser-local CSV workflow: bounded import, column profiling, visible quality findings, row preview, preview-before-apply cleanup, reset and CSV export. No server upload, auth, persistence, billing, ML scoring, or model training. `apps/web` lint and production build passed; scope and next gates are documented in README and `apps/web/README.md`.
+
 - 2026-10-13 — Created this concise project memory with the architecture direction, Plans 1–6 state, open decisions and an ongoing dated-log rule. Initial record: [commit](https://github.com/chandravadiyaDeep/WTF/commit/5fc28daca3db489f1e1f4c4f5c3ff45814d017f6).
 - 2026-10-12 — Connected work to repository WTF and used branch docs/numpa-v2-architecture.
 - 2026-10-12 — Reviewed Plans 1–3 as inputs; drafted Plan 4 and indexed it. Plan 4 established shared processing contracts, explicit browser/cloud routing, cleaning previews, evidence, gated readiness scoring and leakage-safe evaluation.
@@ -54,7 +56,7 @@ Index: [architecture plans index](docs/architecture/architecture-plans-index.md)
 6. Payment provider, token prices/discounts, partial billing, refunds and manual adjustment controls.
 7. Data classification, retention/deletion, storage region/cache and backup/object recovery.
 8. RPO/RTO, concurrency quotas, monitoring/on-call ownership and incident response.
-9. Review/approve plans, then define implementation and release sequence in Plan 7.
+9. Review Plans 2–6 and complete Plan 7 implementation/release sequencing before adding cloud services, paid flows, account support, or production deployment.
 
 ## Memory maintenance
 
