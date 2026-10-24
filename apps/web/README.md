@@ -30,11 +30,11 @@ Cloud saving is an explicit opt-in. The source CSV is stored in a private bucket
 - Dataset profile: field type heuristic, missing values, unique counts, exact duplicate rows, completeness, quality observations, and row preview.
 - Safe cleaning preview for whitespace trimming and exact duplicate removal; apply changes explicitly to a working copy, reset, and export.
 - Account signup, sign in, sign out, email confirmation callback, and password reset/update flows.
-- Optional private source copy with SHA-256, schema summary, immutable version metadata, and saved dataset history.
+- Optional private source copy with SHA-256, schema summary, immutable version metadata, and saved dataset history; applied cleaning can be explicitly saved as a new immutable version.
 - Security headers, server-side session refresh, server-side user check for `/app`, private storage, and workspace row policies.
 
 ## Product boundaries and launch gates
 
 This is a working MVP foundation, not yet a launch-ready full NUMPA SaaS. No production Supabase project, secrets, SMTP provider, hosting domain, or deployment has been provisioned here. Processing is browser-local; FastAPI endpoints, durable workers, job execution, Excel/PDF parsing, visualization workflows, task-specific ML readiness, model training/evaluation, report generation, billing, team invitations, deletion/retention automation, backups, monitoring, and operational runbooks are not implemented. The SQL migration has been written but must be applied and validated against a real Supabase project before enabling cloud accounts.
 
-The browser upload size is deliberately bounded. Type inference is heuristic, and no displayed result is an ML-readiness score or a model-performance prediction. Cleaning only affects the in-memory working copy; saving a copy currently stores the source version and does not persist an applied cleaning result as a new version.
+The browser upload size is deliberately bounded. Type inference is heuristic, and no displayed result is an ML-readiness score or a model-performance prediction. Cleaning changes the in-memory working copy first; a separate explicit action persists it as a new version when the dataset has a private workspace copy.

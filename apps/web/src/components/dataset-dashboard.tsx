@@ -62,6 +62,8 @@ export default function DatasetDashboard({ accountEmail, workspaceId, savedDatas
   const [saveToWorkspace, setSaveToWorkspace] = useState(false);
   const [savingToWorkspace, setSavingToWorkspace] = useState(false);
   const [savedDatasetId, setSavedDatasetId] = useState("");
+  const [currentVersionNumber, setCurrentVersionNumber] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [loadingSavedId, setLoadingSavedId] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -94,10 +96,13 @@ export default function DatasetDashboard({ accountEmail, workspaceId, savedDatas
       setFilename(file.name);
       setIsSample(false);
       setSavedDatasetId("");
+      setCurrentVersionNumber(0);
+      setHasUnsavedChanges(false);
       if (saveToWorkspace && workspaceId) {
         setSavingToWorkspace(true);
         const id = await savePrivateCopy(file, parsed, workspaceId);
         setSavedDatasetId(id);
+        setCurrentVersionNumber(1);
         setNotice("CSV analyzed locally and saved as a private copy in your workspace.");
         router.refresh();
       } else {
@@ -185,6 +190,8 @@ export default function DatasetDashboard({ accountEmail, workspaceId, savedDatas
       setFilename(record.source_filename);
       setIsSample(false);
       setSavedDatasetId(record.id);
+      setCurrentVersionNumber(record.current_version_number);
+      setHasUnsavedChanges(false);
       setPreview(null);
       setNotice(`Private workspace version ${record.current_version_number} opened and analyzed locally in this tab.`);
     } catch (reason) {
@@ -219,14 +226,63 @@ export default function DatasetDashboard({ accountEmail, workspaceId, savedDatas
     if (!preview) return;
     setDataset(preview);
     setPreview(null);
-    setSavedDatasetId("");
-    setNotice("Changes applied to this in-memory working copy. The original file and saved workspace version remain unchanged.");
+    setHasUnsavedChanges(Boolean(savedDatasetId));
+    setNotice(savedDatasetId
+      ? "Changes are in this tab only. Save them as a new workspace version when you are ready."
+      : "Changes applied to this in-memory working copy. The original file remains unchanged.");
   }
 
   function resetDataset() {
     setDataset(original);
     setPreview(null);
+    setHasUnsavedChanges(false);
     setNotice("Working copy restored to the original dataset.");
+  }
+
+  async function saveWorkingVersion() {
+    if (!workspaceId || !savedDatasetId || !hasUnsavedChanges || savingToWorkspace) return;
+    setSavingToWorkspace(true);
+    setError("");
+    setNotice("");
+    const nextVersion = currentVersionNumber + 1;
+    const objectKey = `${workspaceId}/${savedDatasetId}/versions/v${nextVersion}.csv`;
+    try {
+      const csv = [dataset.headers, ...dataset.rows]
+        .map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","))
+        .join("\r\n");
+      const file = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+      if (file.size > MAX_FILE_BYTES) throw new Error("This prepared version is larger than the 10 MB workspace limit.");
+      const bytes = await file.arrayBuffer();
+      const digestBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      const sha256 = Array.from(digestBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+      const profileSnapshot = profileDataset(dataset).map(({ name, type, missing, unique }) => ({ name, type, missing, unique }));
+      const supabase = createClient();
+      const { error: uploadError } = await supabase.storage.from("numpa-private").upload(objectKey, file, { contentType: "text/csv", upsert: false });
+      if (uploadError) throw new Error(`The prepared version could not be uploaded: ${uploadError.message}`);
+      const { error: versionError } = await supabase.rpc("create_dataset_version", {
+        p_workspace_id: workspaceId,
+        p_dataset_id: savedDatasetId,
+        p_object_key: objectKey,
+        p_sha256: sha256,
+        p_schema_snapshot: profileSnapshot,
+        p_row_count: dataset.rows.length,
+        p_column_count: dataset.headers.length,
+        p_byte_size: file.size,
+      });
+      if (versionError) {
+        await supabase.storage.from("numpa-private").remove([objectKey]);
+        throw new Error(`The file was uploaded but its version record failed: ${versionError.message}`);
+      }
+      setCurrentVersionNumber(nextVersion);
+      setHasUnsavedChanges(false);
+      setOriginal(dataset);
+      setNotice(`Saved as workspace version ${nextVersion}. The previous version remains available in history.`);
+      router.refresh();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The prepared version could not be saved.");
+    } finally {
+      setSavingToWorkspace(false);
+    }
   }
 
   const chartValues = profile.map((column) => Math.round(100 * (dataset.rows.length - column.missing) / Math.max(1, dataset.rows.length)));
@@ -263,9 +319,9 @@ export default function DatasetDashboard({ accountEmail, workspaceId, savedDatas
           {saveToWorkspace && workspaceId && <p className="cloud-consent"><Icon name="lock" size={12} /> The source CSV, sanitized file name, and a schema summary will be stored in your private workspace. Analysis still runs in this browser.</p>}
           {savingToWorkspace && <div className="message success-message" role="status">Saving private workspace copy…</div>}
 
-          <section className="dataset-bar" id="dataset"><div className="file-badge">CSV</div><div className="dataset-meta"><div className="dataset-name">{filename} {isSample && <span className="sample-badge">SAMPLE DATA</span>} {savedDatasetId && <span className="saved-badge">PRIVATE WORKSPACE COPY</span>}</div><div className="dataset-details">{dataset.rows.length.toLocaleString()} rows <span>·</span> {dataset.headers.length} columns <span>·</span> <span className="status-ready"><i /> Profile ready</span></div></div><div className="dataset-actions"><button className="button subtle" onClick={resetDataset} disabled={dataset === original}>Reset</button><button className="button outline" onClick={exportCsv}><Icon name="download" size={16} /> Export CSV</button></div></section>
+          <section className="dataset-bar" id="dataset"><div className="file-badge">CSV</div><div className="dataset-meta"><div className="dataset-name">{filename} {isSample && <span className="sample-badge">SAMPLE DATA</span>} {savedDatasetId && <span className="saved-badge">{hasUnsavedChanges ? `UNSAVED · v${currentVersionNumber}` : `WORKSPACE · v${currentVersionNumber}`}</span>}</div><div className="dataset-details">{dataset.rows.length.toLocaleString()} rows <span>·</span> {dataset.headers.length} columns <span>·</span> <span className="status-ready"><i /> Profile ready</span></div></div><div className="dataset-actions"><button className="button subtle" onClick={resetDataset} disabled={dataset === original}>Reset</button>{hasUnsavedChanges && <button className="button primary" onClick={() => void saveWorkingVersion()} disabled={savingToWorkspace}>{savingToWorkspace ? "Saving…" : `Save as v${currentVersionNumber + 1}`}</button>}<button className="button outline" onClick={exportCsv}><Icon name="download" size={16} /> Export CSV</button></div></section>
 
-          {accountEmail && savedDatasets.length > 0 && <section className="saved-history panel"><div className="history-heading"><div><div className="eyebrow">PRIVATE WORKSPACE HISTORY</div><h2>Saved datasets</h2></div><span>{savedDatasets.length} recent</span></div><div className="history-list">{savedDatasets.map((record) => <div className="history-row" key={record.id}><span className="file-badge">CSV</span><div><strong>{record.name}</strong><small>{record.row_count?.toLocaleString() ?? "—"} rows · {record.column_count ?? "—"} columns · {new Date(record.created_at).toLocaleDateString()}</small></div><button className="button subtle" disabled={loadingSavedId === record.id} onClick={() => void loadSavedDataset(record)}>{loadingSavedId === record.id ? "Opening…" : "Open"}</button></div>)}</div></section>}
+          {accountEmail && savedDatasets.length > 0 && <section className="saved-history panel"><div className="history-heading"><div><div className="eyebrow">PRIVATE WORKSPACE HISTORY</div><h2>Saved datasets</h2></div><span>{savedDatasets.length} recent</span></div><div className="history-list">{savedDatasets.map((record) => <div className="history-row" key={record.id}><span className="file-badge">CSV</span><div><strong>{record.name}</strong><small>v{record.current_version_number} · {record.row_count?.toLocaleString() ?? "—"} rows · {record.column_count ?? "—"} columns · {new Date(record.created_at).toLocaleDateString()}</small></div><button className="button subtle" disabled={loadingSavedId === record.id} onClick={() => void loadSavedDataset(record)}>{loadingSavedId === record.id ? "Opening…" : "Open"}</button></div>)}</div></section>}
 
           <div className="section-heading"><div><div className="eyebrow">AT A GLANCE</div><h2>Your dataset, summarized</h2></div><span className="updated-label"><span className="green-pulse" /> Analysis runs locally</span></div>
 

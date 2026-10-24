@@ -38,7 +38,7 @@ Index: [`docs/architecture/architecture-plans-index.md`](docs/architecture/archi
 - Without Supabase configuration, `/demo` works locally and does not upload or persist the file.
 - Optional Supabase auth: signup, login, email callback, password reset, signout; `/app` checks the current authenticated user server-side.
 - User may opt into saving the source CSV to a private workspace bucket. Schema summary excludes sample values. Row-level policies scope workspace records; database RPCs create/fail versions and constrain object paths.
-- Saved datasets can be listed and opened from private storage. Analysis remains local. Applied cleaning is not yet saved as a new version.
+- Saved datasets can be listed/opened from private storage. Analysis remains local. Applied cleaning can be explicitly saved as an immutable version; the previous version remains unchanged.
 - `apps/web/README.md` contains setup steps. `.env.example` is safe to copy; never commit `.env.local` or service-role secrets.
 
 ## Remaining before a real SaaS launch
@@ -54,6 +54,7 @@ Index: [`docs/architecture/architecture-plans-index.md`](docs/architecture/archi
 
 - 2026-10-23 — Started MVP by explicit user direction. Added local CSV profiling and cleaning. Later expanded with Supabase auth routes, personal workspace schema/RLS, private storage, opt-in cloud source saving and saved dataset history.
 - 2026-10-24 — Hardened dataset persistence: version creation uses an atomic security-definer RPC; dataset creation and private object upload policies restrict client writes; added an upload-failure RPC; removed unrestricted metadata updates and direct deletion to avoid orphaning private objects. Added setup/boundary docs, a concise handoff update, and web lint/build CI. `npm run lint` and `npm run build` passed. No project credentials or deployment environment are available here.
+- 2026-10-24 — Added explicit save-as-version for cleaned private datasets. The web app uploads the prepared CSV under the next version path, then calls the version RPC; the source and previous versions remain available. `npm run lint` and `npm run build` passed; syncing this follow-up to GitHub.
 - 2026-10-13 — Created this memory handoff and architecture direction record.
 - 2026-10-12 — Connected repository WTF and branch `docs/numpa-v2-architecture`; documented Plans 1–6 and the supplied dark dashboard design reference.
 
