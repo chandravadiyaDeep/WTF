@@ -54,7 +54,7 @@ Index: [`docs/architecture/architecture-plans-index.md`](docs/architecture/archi
 
 - 2026-10-23 — Started MVP by explicit user direction. Added local CSV profiling and cleaning. Later expanded with Supabase auth routes, personal workspace schema/RLS, private storage, opt-in cloud source saving and saved dataset history.
 - 2026-10-24 — Hardened dataset persistence: version creation uses an atomic security-definer RPC; dataset creation and private object upload policies restrict client writes; added an upload-failure RPC; removed unrestricted metadata updates and direct deletion to avoid orphaning private objects. Added setup/boundary docs, a concise handoff update, and web lint/build CI. `npm run lint` and `npm run build` passed. No project credentials or deployment environment are available here.
-- 2026-10-24 — Added explicit save-as-version for cleaned private datasets. The web app uploads the prepared CSV under the next version path, then calls the version RPC; the source and previous versions remain available. `npm run lint` and `npm run build` passed; syncing this follow-up to GitHub.
+- 2026-10-24 — Added explicit save-as-version for cleaned private datasets. The web app uploads the prepared CSV under the next version path, then calls the version RPC; the source and previous versions remain available. `npm run lint` and `npm run build` passed; local `/demo` returned HTTP 200. GitHub CI passed for commit `e4128365ea8a30182a816984414e6858be7ef375`.
 - 2026-10-13 — Created this memory handoff and architecture direction record.
 - 2026-10-12 — Connected repository WTF and branch `docs/numpa-v2-architecture`; documented Plans 1–6 and the supplied dark dashboard design reference.
 
