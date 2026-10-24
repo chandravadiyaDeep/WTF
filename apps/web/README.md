@@ -15,7 +15,7 @@ Open `http://localhost:3000`. The public homepage links to `/demo`, which runs w
 ## Enable accounts and private saved datasets
 
 1. Create a Supabase project.
-2. Copy `.env.example` to `.env.local` in this directory and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_APP_URL`.
+2. Copy `.env.example` to `.env.local` in this directory and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 3. Apply `../../supabase/migrations/20261023000100_saas_foundation.sql` to that project using Supabase SQL Editor or Supabase CLI.
 4. In Supabase Auth URL Configuration, set the site URL to the app URL and allow `<app-url>/auth/callback`.
 5. Configure SMTP/email delivery and verify signup and password reset email links.

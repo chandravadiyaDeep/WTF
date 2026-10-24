@@ -6,6 +6,8 @@ NUMPA is being built as an explainable data workspace that helps users inspect a
 
 The current runnable web slice is in [`apps/web`](apps/web/README.md). It provides a browser-local CSV profiling and cleaning workflow, optional Supabase authentication, and opt-in private workspace copies with version metadata. The current scope and cloud setup steps are in the web README.
 
+For a fill-in checklist covering Supabase, local environment setup, auth email redirects, migration deployment, hosting, and which credentials must stay private, see [`docs/launch-setup.md`](docs/launch-setup.md).
+
 ## Run
 
 ```powershell
