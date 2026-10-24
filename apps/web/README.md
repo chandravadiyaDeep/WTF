@@ -1,32 +1,40 @@
-# NUMPA Web MVP — first slice
+# NUMPA Web
 
-This is the first usable product slice: a single-page, browser-local CSV workspace for inspecting a dataset and reviewing safe, explicit cleanup. It follows the NUMPA dark workspace direction in the root `design.md` while keeping the data workflow evidence-first.
+The current product slice is a Next.js workspace for CSV inspection and explicit cleaning. It supports browser-only use without an account, plus optional Supabase accounts and private saved dataset copies.
 
 ## Run locally
 
-```bash
-npm install
+```powershell
+cd apps/web
+npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`. Use `npm run lint` and `npm run build` before sharing changes.
+Open `http://localhost:3000`. The public homepage links to `/demo`, which runs without cloud configuration. Use `npm run lint` and `npm run build` to validate code changes.
 
-## What works
+## Enable accounts and private saved datasets
 
-- Load the bundled synthetic customer sample or choose/drop a CSV file.
-- Parse quoted CSV cells, escaped quotes, embedded line breaks, and UTF-8 BOMs in the browser.
-- Show row/column counts, inferred field types, missing cells, exact duplicate rows, completeness by column, quality observations, and a small row preview.
-- Select whitespace trimming and exact duplicate removal, inspect the exact proposed row/cell effects, then explicitly apply to an in-memory working copy.
-- Reset the working copy and export a prepared CSV. Export prefixes spreadsheet formula-like values to reduce formula injection risk.
+1. Create a Supabase project.
+2. Copy `.env.example` to `.env.local` in this directory and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_APP_URL`.
+3. Apply `../../supabase/migrations/20261023000100_saas_foundation.sql` to that project using Supabase SQL Editor or Supabase CLI.
+4. In Supabase Auth URL Configuration, set the site URL to the app URL and allow `<app-url>/auth/callback`.
+5. Configure SMTP/email delivery and verify signup and password reset email links.
+6. Restart the dev server, create an account, then open `/app`.
 
-## MVP boundaries
+Cloud saving is an explicit opt-in. The source CSV is stored in a private bucket; schema metadata is saved without sample cell values. Analysis and cleaning remain in the browser. The database creates one personal workspace at signup and enforces workspace membership and roles with RLS. The app requests the current workspace’s last 12 ready datasets and downloads private objects through the signed-in user session.
 
-- CSV only; 10 MB maximum file size, 20,000 data rows, and 80 columns.
-- The source file is read into this tab. There is no API upload, cloud fallback, local storage, telemetry, or third-party font request. Reloading the page clears the uploaded data.
-- Type inference is heuristic. It is a profiling aid, not a schema contract.
-- Cleaning changes only the in-memory working copy; the original data is retained for reset during the current page session.
-- No authentication, database, workspace history, jobs, Excel/PDF parsing, PDF reports, ML readiness score, recommendations, model training, billing, or deployment configuration is implemented in this slice.
+## Current capabilities
 
-## Next implementation gates
+- CSV upload via file chooser or drag and drop, capped at 10 MB, 20,000 data rows, and 80 columns.
+- Quoted values, escaped quotes, embedded line breaks, and UTF-8 BOM parsing.
+- Dataset profile: field type heuristic, missing values, unique counts, exact duplicate rows, completeness, quality observations, and row preview.
+- Safe cleaning preview for whitespace trimming and exact duplicate removal; apply changes explicitly to a working copy, reset, and export.
+- Account signup, sign in, sign out, email confirmation callback, and password reset/update flows.
+- Optional private source copy with SHA-256, schema summary, immutable version metadata, and saved dataset history.
+- Security headers, server-side session refresh, server-side user check for `/app`, private storage, and workspace row policies.
 
-Before cloud processing or production launch, review Plans 2–6 and complete Plan 7. Decide browser persistence and consent, API/database contracts, supported formats and resource limits, deletion/retention, auth/RLS, worker/job behavior, recovery targets, operational ownership, and model/readiness policy. Keep future engine behavior deterministic, versioned, and backed by evidence; never present this UI's profiling as ML readiness.
+## Product boundaries and launch gates
+
+This is a working MVP foundation, not yet a launch-ready full NUMPA SaaS. No production Supabase project, secrets, SMTP provider, hosting domain, or deployment has been provisioned here. Processing is browser-local; FastAPI endpoints, durable workers, job execution, Excel/PDF parsing, visualization workflows, task-specific ML readiness, model training/evaluation, report generation, billing, team invitations, deletion/retention automation, backups, monitoring, and operational runbooks are not implemented. The SQL migration has been written but must be applied and validated against a real Supabase project before enabling cloud accounts.
+
+The browser upload size is deliberately bounded. Type inference is heuristic, and no displayed result is an ML-readiness score or a model-performance prediction. Cleaning only affects the in-memory working copy; saving a copy currently stores the source version and does not persist an applied cleaning result as a new version.
