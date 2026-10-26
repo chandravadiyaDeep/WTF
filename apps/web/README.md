@@ -14,9 +14,9 @@ Open `http://localhost:3000`. The public homepage links to `/demo`, which runs w
 
 ## Enable accounts and private saved datasets
 
-1. Create a Supabase project.
-2. Copy `.env.example` to `.env.local` in this directory and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Apply `../../supabase/migrations/20261023000100_saas_foundation.sql` to that project using Supabase SQL Editor or Supabase CLI.
+1. Use the development project [`numpa-v2-dev`](https://supabase.com/dashboard/project/xjkulfyetcvuuhxhuevp) (`xjkulfyetcvuuhxhuevp`). Confirm its region under **Project Settings → General**.
+2. `apps/web/.env.local` is ignored by Git. Set `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` there from **Project Settings → API Keys**; the Project URL is already configured as `https://xjkulfyetcvuuhxhuevp.supabase.co`. Do not put a secret/service-role key in this file.
+3. Review and apply both ordered migrations to development: `../../supabase/migrations/20261023000100_saas_foundation.sql`, then `../../supabase/migrations/20261024000100_supabase_access_hardening.sql`. Preview with `npx --yes supabase@latest db push --dry-run` first. See [`docs/launch-setup.md`](../../docs/launch-setup.md) for exact steps and pending status.
 4. In Supabase Auth URL Configuration, set the site URL to the app URL and allow `<app-url>/auth/callback`.
 5. Configure SMTP/email delivery and verify signup and password reset email links.
 6. Restart the dev server, create an account, then open `/app`.
@@ -35,6 +35,7 @@ Cloud saving is an explicit opt-in. The source CSV is stored in a private bucket
 
 ## Product boundaries and launch gates
 
-This is a working MVP foundation, not yet a launch-ready full NUMPA SaaS. No production Supabase project, secrets, SMTP provider, hosting domain, or deployment has been provisioned here. Processing is browser-local; FastAPI endpoints, durable workers, job execution, Excel/PDF parsing, visualization workflows, task-specific ML readiness, model training/evaluation, report generation, billing, team invitations, deletion/retention automation, backups, monitoring, and operational runbooks are not implemented. The SQL migration has been written but must be applied and validated against a real Supabase project before enabling cloud accounts.
+This is a working MVP foundation, not yet a launch-ready full NUMPA SaaS. The development project details are recorded, but remote migrations, Auth dashboard settings, SMTP, hosting, and production are not verified/configured. The publishable key still needs to be entered locally. Processing is browser-local; FastAPI endpoints, durable workers, job execution, Excel/PDF parsing, visualization workflows, task-specific ML readiness, model training/evaluation, report generation, billing, team invitations, deletion/retention automation, backups, monitoring, and operational runbooks are not implemented. Both SQL migrations must be applied and validated against development before enabling cloud accounts.
 
 The browser upload size is deliberately bounded. Type inference is heuristic, and no displayed result is an ML-readiness score or a model-performance prediction. Cleaning changes the in-memory working copy first; a separate explicit action persists it as a new version when the dataset has a private workspace copy.
+
